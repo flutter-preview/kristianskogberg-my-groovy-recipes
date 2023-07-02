@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:developer' as devtools show log;
 import 'package:flutter/material.dart';
 import 'package:my_groovy_recipes/constants/routes.dart';
+import 'package:my_groovy_recipes/utilities/show_error_dialog.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -55,15 +55,26 @@ class _LoginViewState extends State<LoginView> {
               try {
                 await FirebaseAuth.instance.signInWithEmailAndPassword(
                     email: email, password: password);
-
-                Navigator.of(context)
-                    .pushNamedAndRemoveUntil(myRecipesRoute, (route) => false);
+                final user = FirebaseAuth.instance.currentUser;
+                if (user?.emailVerified ?? false) {
+                  // email is verified
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                      myRecipesRoute, (route) => false);
+                } else {
+                  // email is not verified
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                      verifyEmailRoute, (route) => false);
+                }
               } on FirebaseAuthException catch (e) {
                 if (e.code == "user-not-found") {
-                  print("User not found");
+                  await showErrorDialog(context, "User not found");
                 } else if (e.code == "wrong-password") {
-                  print("Wrong password");
+                  await showErrorDialog(context, "Invalid password");
+                } else {
+                  await showErrorDialog(context, "Error: ${e.code}");
                 }
+              } catch (e) {
+                await showErrorDialog(context, "Error: ${e.toString()}");
               }
             },
             child: const Text("Login"),
