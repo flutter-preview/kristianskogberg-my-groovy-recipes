@@ -50,6 +50,12 @@ class _RegisterViewState extends State<RegisterView> {
             controller: _password,
           ),
           TextButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(
+                  Colors.blue), // Set the background color
+              foregroundColor: MaterialStateProperty.all<Color>(
+                  Colors.white), // Set the text color
+            ),
             onPressed: () async {
               final email = _email.text;
               final password = _password.text;
